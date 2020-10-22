@@ -12,36 +12,33 @@ logger = logging.getLogger('HELLO WORLD')
 UPLOAD_FOLDER = '/home/adhithya/AIkenist/Covid/covidbackend/static//'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
-fname = []
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 CORS(app, expose_headers='Authorization')
 
-app.config["RESULT"] = "/home/adhithya/AIkenist/Covid/covidbackend/static/test_docs"
+app.config["RESULT"] = "/home/adhithya/AIkenist/Covid/covidbackend/static/images"
 
 
 @app.route('/upload', methods=['POST'])
 def fileUpload():
-    target = os.path.join(UPLOAD_FOLDER,'test_docs')
+    target = os.path.join(UPLOAD_FOLDER,'images')
     if not os.path.isdir(target):
         os.mkdir(target)
     logger.info("welcome to upload`")
     file = request.files['file']
-    fname.append(file.filename)
-    print(fname[0])
     filename = secure_filename(file.filename)
     destination = "/".join([target, filename])
     file.save(destination)
     session['uploadFilePath'] = destination
-    return jsonify({'fileName': fname[0]})
+    return jsonify({'fileName': file.filename})
 
-@app.route("/get-image", methods=['GET'])
-def get_image():
+@app.route("/get-image/<image_name>", methods=['GET'])
+def get_image(image_name):
 
     try:
-        return send_from_directory(app.config["RESULT"], filename=fname[0], as_attachment=True)
+        return send_from_directory(app.config["RESULT"], filename=image_name, as_attachment=True)
     except FileNotFoundError:
         abort(404)
 
